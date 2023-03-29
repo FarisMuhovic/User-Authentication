@@ -1,7 +1,8 @@
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import React, {useState, useEffect} from "react";
 import axios from "axios";
-const Register = () => {
+const Register = props => {
+  let navigate = useNavigate();
   const [userData, setuserData] = useState({
     username: "",
     password: "",
@@ -19,17 +20,30 @@ const Register = () => {
         withCredentials: true, // send and receive cookies
       })
       .then(res => {
-        console.log(res); //receive sessionID
+        res.data.message == "User created" && navigate("/dashboard");
       })
       .catch(err => {
-        console.log(err);
+        alert("Email or username already exists");
       });
   }
+  // * sessions
   useEffect(() => {
-    axios.get("http://localhost:6001/auth/login").then(res => {
-      console.log(res);
-    });
+    axios
+      .get("http://localhost:6001/auth/login", {withCredentials: true})
+      .then(res => {
+        console.log(res.data.message);
+        res.data.message === "User is logged in"
+          ? props.setsessionsID(true)
+          : props.setsessionsID(false);
+      })
+      .catch(err => {
+        console.log(err.response.data.message);
+      });
   }, []);
+  // * Redirect to dashboard if user is logged in
+  // useEffect(() => {
+  //   props.sessionsID && navigate("/dashboard");
+  // }, [props, props.sessionsID]);
   return (
     <div className="register">
       <div className="left-side">
